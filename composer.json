@@ -1,5 +1,5 @@
 {
-    "name": "datto/php-json-rpc",
+    "name": "datto/json-rpc",
     "type": "library",
     "description": "Fully unit-tested JSON-RPC 2.0 for PHP",
     "keywords": ["php", "json", "rpc", "jsonrpc", "json-rpc", "php-json-rpc"],
