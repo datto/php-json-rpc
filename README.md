@@ -42,9 +42,10 @@ $reply = $server->reply($request); // {"jsonrpc":"2.0","id":1,"result":2}
 ## Installation
 
 If you're using [Composer](https://getcomposer.org/), you can use this package
-by inserting a line in the "require" section of your "composer.json" file:
+([datto/json-rpc](https://packagist.org/packages/datto/json-rpc))
+by inserting a line into the "require" section of your "composer.json" file:
 ```
-        "datto/json-rpc": "1.0.*"
+        "datto/json-rpc": "~1.0"
 ```
 
 ## Getting started
