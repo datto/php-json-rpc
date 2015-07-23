@@ -259,9 +259,43 @@ class Server
     {
         if (self::isPositionalArguments($arguments)) {
             return call_user_func_array($callable, $arguments);
+        } else {
+            $orderedArguments = self::orderArguments($callable, $arguments);
+
+            if ($orderedArguments === null) {
+                return null;
+            } else {
+                return call_user_func_array($callable, $orderedArguments);
+            }
+        }
+    }
+
+    private static function orderArguments($callable, $arguments)
+    {
+        $reflection = self::createReflectionMethod($callable);
+        $orderedArgs = array();
+
+        /* @var $param \ReflectionParameter */
+        foreach ($reflection->getParameters() as $param) {
+            if (isset($arguments[$param->getName()])) {
+                $orderedArgs[] = $arguments[$param->getName()];
+            } else if ($param->isOptional()) {
+                $orderedArgs[] = $param->getDefaultValue();
+            } else {
+                return null;
+            }
         }
 
-        return call_user_func($callable, $arguments);
+        return $orderedArgs;
+    }
+
+    private static function createReflectionMethod($callable)
+    {
+        if (is_array($callable) && isset($callable[0])) {
+            return new \ReflectionMethod($callable[0], $callable[1]);
+        } else {
+            return new \ReflectionMethod(null, $callable);
+        }
     }
 
     /**
