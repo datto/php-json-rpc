@@ -258,7 +258,7 @@ class Server
     protected static function run($callable, $arguments)
     {
         if (self::isPositionalArguments($arguments)) {
-            return self::runWithPositionalArgs($callable, $arguments);
+            return self::runWithPositionalArguments($callable, $arguments);
         } else {
             return self::runWithNamedArguments($callable, $arguments);
         }
@@ -277,7 +277,7 @@ class Server
      * Returns the return value from the callable.
      * Returns null on error.
      */
-    protected static function runWithPositionalArgs($callable, $arguments)
+    protected static function runWithPositionalArguments($callable, $arguments)
     {
         $method = self::createReflectionMethod($callable);
 
