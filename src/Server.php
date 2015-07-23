@@ -258,15 +258,57 @@ class Server
     protected static function run($callable, $arguments)
     {
         if (self::isPositionalArguments($arguments)) {
+            return self::runWithPositionalArgs($callable, $arguments);
+        } else {
+            return self::runWithNamedArguments($callable, $arguments);
+        }
+    }
+
+    /**
+     * Executes a callable with positional arguments, and returns the result.
+     *
+     * @param callable $callable
+     * A callable that will be executed.
+     *
+     * @param array $arguments
+     * Positional array of arguments that will be passed to the callable.
+     *
+     * @return mixed
+     * Returns the return value from the callable.
+     * Returns null on error.
+     */
+    protected static function runWithPositionalArgs($callable, $arguments)
+    {
+        $method = self::createReflectionMethod($callable);
+
+        if (count($method->getParameters()) === count($arguments)) {
             return call_user_func_array($callable, $arguments);
         } else {
-            $orderedArguments = self::orderArguments($callable, $arguments);
+            return null;
+        }
+    }
 
-            if ($orderedArguments === null) {
-                return null;
-            } else {
-                return call_user_func_array($callable, $orderedArguments);
-            }
+    /**
+     * Executes a callable with named arguments, and returns the result.
+     *
+     * @param callable $callable
+     * A callable that will be executed.
+     *
+     * @param array $arguments
+     * Associative array of arguments that will be passed to the callable.
+     *
+     * @return mixed
+     * Returns the return value from the callable.
+     * Returns null on error.
+     */
+    protected static function runWithNamedArguments($callable, $arguments)
+    {
+        $orderedArguments = self::orderArguments($callable, $arguments);
+
+        if ($orderedArguments !== null) {
+            return call_user_func_array($callable, $orderedArguments);
+        } else {
+            return null;
         }
     }
 
@@ -286,11 +328,10 @@ class Server
      */
     protected static function orderArguments($callable, $arguments)
     {
-        $reflection = self::createReflectionMethod($callable);
+        $method = self::createReflectionMethod($callable);
         $orderedArgs = array();
 
-        /* @var $param \ReflectionParameter */
-        foreach ($reflection->getParameters() as $param) {
+        foreach ($method->getParameters() as $param) {
             if (isset($arguments[$param->getName()])) {
                 $orderedArgs[] = $arguments[$param->getName()];
             } else if ($param->isOptional()) {

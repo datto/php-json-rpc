@@ -26,39 +26,22 @@ namespace Datto\JsonRpc\Tests\Example\Stateful;
 
 class Math
 {
-    public function subtract()
-    {
-        $arguments = func_get_args();
-
-        if (count($arguments) === 1) {
-            // Named arguments
-            $a = @$arguments[0]['minuend'];
-            $b = @$arguments[0]['subtrahend'];
-        } else {
-            // Positional arguments
-            $a = @$arguments[0];
-            $b = @$arguments[1];
-        }
-
-        return self::sub($a, $b);
-    }
-
     /**
      * Returns the value $a - $b
      *
-     * @param mixed $a
-     * @param mixed $b
+     * @param mixed $minuend
+     * @param mixed $subtrahend
      *
      * @return int|null
      * Returns $a - $b if both $a and $b are integers
      * Returns null otherwise
      */
-    private static function sub($a, $b)
+    public function subtract($minuend, $subtrahend)
     {
-        if (!is_int($a) || !is_int($b)) {
+        if (!is_int($minuend) || !is_int($subtrahend)) {
             return null;
         }
 
-        return $a - $b;
+        return $minuend - $subtrahend;
     }
 }
