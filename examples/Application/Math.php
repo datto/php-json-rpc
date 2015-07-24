@@ -22,43 +22,26 @@
  * @copyright 2015 Datto, Inc.
  */
 
-namespace Datto\JsonRpc\Tests\Example\Stateful;
+namespace Datto\JsonRpc\Examples\Application;
 
 class Math
 {
-    public function subtract()
-    {
-        $arguments = func_get_args();
-
-        if (count($arguments) === 1) {
-            // Named arguments
-            $a = @$arguments[0]['minuend'];
-            $b = @$arguments[0]['subtrahend'];
-        } else {
-            // Positional arguments
-            $a = @$arguments[0];
-            $b = @$arguments[1];
-        }
-
-        return self::sub($a, $b);
-    }
-
     /**
-     * Returns the value $a - $b
+     * Returns the value $a + $b.
      *
      * @param mixed $a
      * @param mixed $b
      *
      * @return int|null
-     * Returns $a - $b if both $a and $b are integers
-     * Returns null otherwise
+     * Returns $a + $b if both $a and $b are integers.
+     * Returns null otherwise.
      */
-    private static function sub($a, $b)
+    public static function add($a, $b)
     {
-        if (!is_int($a) || !is_int($b)) {
-            return null;
+        if (is_int($a) && is_int($b)) {
+            return $a + $b;
         }
 
-        return $a - $b;
+        return null;
     }
 }

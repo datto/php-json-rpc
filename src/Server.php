@@ -35,15 +35,15 @@ class Server
 {
     const VERSION = '2.0';
 
-    /** @var Translator */
-    private $translator;
+    /** @var callable */
+    private $interpreter;
 
     /**
-     * @param Translator $translator
+     * @param callable $interpreter
      */
-    public function __construct(Translator $translator)
+    public function __construct(callable $interpreter)
     {
-        $this->translator = $translator;
+        $this->interpreter = $interpreter;
     }
 
     /**
@@ -208,7 +208,7 @@ class Server
      */
     private function processQuery($id, $method, $arguments)
     {
-        $callable = $this->translator->getCallable($method);
+        $callable = $this->getCallable($method);
 
         if (!is_callable($callable)) {
             return self::errorMethod($id);
@@ -228,18 +228,34 @@ class Server
      * Processes a notification. No response is necessary.
      *
      * @param string $method
-     * String value representing a method to invoke on the server
+     * String value representing a method to invoke on the server.
      *
      * @param array $arguments
      * Array of arguments that will be passed to the method.
      */
     private function processNotification($method, $arguments)
     {
-        $callable = $this->translator->getCallable($method);
+        $callable = $this->getCallable($method);
 
         if (is_callable($callable)) {
             self::run($callable, $arguments);
         }
+    }
+
+    /**
+     * Converts a string method name to an actual callable, by asking
+     * the interpreter to translate.
+     *
+     * @param string $method
+     * String value representing the method to invoke on the server.
+     *
+     * @return callable|null
+     * Returns the callable that corresponds to the string name.
+     * Returns null if there is no equivalent callable.
+     */
+    private function getCallable($method)
+    {
+        return call_user_func($this->interpreter, $method);
     }
 
     /**

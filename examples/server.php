@@ -2,14 +2,16 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Datto\JsonRpc\Tests\Example\Stateless\Translator;
 use Datto\JsonRpc\Server;
 
-$translator = new Translator();
-$server = new Server($translator);
+$interpreter = function ($method) {
+    // Convert a JSON-RPC string method name into an actual callable method
+    return array('\\Datto\\JsonRpc\\Examples\\Application\\Math', $method);
+};
 
-$request = '{"jsonrpc":"2.0","id":1,"method":"Math\/subtract","params":[5,3]}';
+$server = new Server($interpreter);
 
-$reply = $server->reply($request);
+$reply = $server->reply('{"jsonrpc":"2.0","id":1,"method":"add","params":[1,2]}');
 
-echo $reply, "\n"; // {"jsonrpc":"2.0","id":1,"result":2}
+echo $reply, "\n";
+// {"jsonrpc":"2.0","id":1,"result":3}

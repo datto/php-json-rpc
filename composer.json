@@ -26,6 +26,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Datto\\JsonRpc\\Examples\\": "examples",
             "Datto\\JsonRpc\\Tests\\": "tests"
         }
     }

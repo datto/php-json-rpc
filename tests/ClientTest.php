@@ -33,7 +33,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
         $client = new Client();
         $client->notify('subtract', array(3, 2));
 
-        $this->compare($client,    '{"jsonrpc":"2.0","method":"subtract","params":[3,2]}');
+        $this->compare($client, '{"jsonrpc":"2.0","method":"subtract","params":[3,2]}');
     }
 
     public function testQuery()
