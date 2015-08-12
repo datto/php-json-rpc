@@ -255,7 +255,7 @@ class Server
      */
     private function getCallable($method)
     {
-        return call_user_func($this->interpreter, $method);
+        return @call_user_func($this->interpreter, $method);
     }
 
     /**
