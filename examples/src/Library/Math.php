@@ -22,26 +22,21 @@
  * @copyright 2015 Datto, Inc.
  */
 
-namespace Datto\JsonRpc\Examples\Application;
+namespace Datto\JsonRpc\Examples\Library;
 
 class Math
 {
     /**
      * Returns the value $a + $b.
      *
-     * @param mixed $a
-     * @param mixed $b
+     * @param int $a
+     * @param int $b
      *
-     * @return int|null
-     * Returns $a + $b if both $a and $b are integers.
-     * Returns null otherwise.
+     * @return int
+     * Returns the value $a + $b.
      */
     public static function add($a, $b)
     {
-        if (is_int($a) && is_int($b)) {
-            return $a + $b;
-        }
-
-        return null;
+        return $a + $b;
     }
 }

@@ -22,9 +22,10 @@
  * @copyright 2015 Datto, Inc.
  */
 
-namespace Datto\JsonRpc;
+namespace Datto\JsonRpc\Tests;
 
 use PHPUnit_Framework_TestCase;
+use Datto\JsonRpc\Client;
 
 class ClientTest extends PHPUnit_Framework_TestCase
 {

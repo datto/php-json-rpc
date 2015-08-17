@@ -22,9 +22,10 @@
  * @copyright 2015 Datto, Inc.
  */
 
-namespace Datto\JsonRpc;
+namespace Datto\JsonRpc\Tests;
 
 use PHPUnit_Framework_TestCase;
+use Datto\JsonRpc\Server;
 
 class ServerTest extends PHPUnit_Framework_TestCase
 {
@@ -220,40 +221,12 @@ class ServerTest extends PHPUnit_Framework_TestCase
 
     private function compare($input, $expectedJsonOutput)
     {
-        $interpreter = array($this, 'interpreter');
-        $server = new Server($interpreter);
-
+        $server = new Server(new Api());
         $actualJsonOutput = $server->reply($input);
 
         $expectedOutput = json_decode($expectedJsonOutput, true);
         $actualOutput = json_decode($actualJsonOutput, true);
 
         $this->assertEquals($expectedOutput, $actualOutput);
-    }
-
-    public function interpreter($method)
-    {
-        return array($this, $method);
-    }
-
-    public static function subtract()
-    {
-        $arguments = func_get_args();
-
-        if (count($arguments) === 1) {
-            // Named arguments
-            $a = @$arguments[0]['minuend'];
-            $b = @$arguments[0]['subtrahend'];
-        } else {
-            // Positional arguments
-            $a = @$arguments[0];
-            $b = @$arguments[1];
-        }
-
-        if (!is_int($a) || !is_int($b)) {
-            return null;
-        }
-
-        return $a - $b;
     }
 }

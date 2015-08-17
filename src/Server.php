@@ -35,15 +35,15 @@ class Server
 {
     const VERSION = '2.0';
 
-    /** @var callable */
-    private $interpreter;
+    /** @var Evaluator */
+    private $evaluator;
 
     /**
-     * @param callable $interpreter
+     * @param Evaluator $evaluator
      */
-    public function __construct($interpreter)
+    public function __construct(Evaluator $evaluator)
     {
-        $this->interpreter = $interpreter;
+        $this->evaluator = $evaluator;
     }
 
     /**
@@ -91,11 +91,11 @@ class Server
             return self::errorRequest();
         }
 
-        if (isset($input['jsonrpc'])) {
-            return $this->processRequest($input);
+        if (isset($input[0])) {
+            return $this->processBatchRequests($input);
         }
 
-        return $this->processBatchRequests($input);
+        return $this->processRequest($input);
     }
 
     /**
@@ -190,38 +190,22 @@ class Server
      * with the original query.
      *
      * @param string $method
-     * String value representing a method to invoke on the server:
-     * JSON-RPC intentionally leaves the internal format of this string unspecified.
+     * String value representing a method to invoke on the server.
      *
      * @param array $arguments
-     * Array of arguments that will be passed to the server method.
-     * This arguments array can be either a zero-indexed or an associative array:
-     *
-     * If the array is a zero-indexed array, then the elements of the array
-     * are passed to the method as sequential, positional arguments.
-     *
-     * If the array is an associative array, then the entire array is passed
-     * as a single argument to the server method.
+     * Array of arguments that will be passed to the method.
      *
      * @return array
      * Returns a response object or an error object.
      */
     private function processQuery($id, $method, $arguments)
     {
-        $callable = $this->getCallable($method);
-
-        if (!is_callable($callable)) {
-            return self::errorMethod($id);
+        try {
+            $result = $this->evaluator->evaluate($method, $arguments);
+            return self::response($id, $result);
+        } catch (Exception $exception) {
+            return self::error($id, $exception->getCode(), $exception->getMessage());
         }
-
-        $result = self::run($callable, $arguments);
-
-        // A callable must return null when invoked with invalid arguments
-        if ($result === null) {
-            return self::errorArguments($id);
-        }
-
-        return self::response($id, $result);
     }
 
     /**
@@ -235,72 +219,10 @@ class Server
      */
     private function processNotification($method, $arguments)
     {
-        $callable = $this->getCallable($method);
-
-        if (is_callable($callable)) {
-            self::run($callable, $arguments);
+        try {
+            $this->evaluator->evaluate($method, $arguments);
+        } catch (Exception $exception) {
         }
-    }
-
-    /**
-     * Converts a string method name to an actual callable, by asking
-     * the interpreter to translate.
-     *
-     * @param string $method
-     * String value representing the method to invoke on the server.
-     *
-     * @return callable|null
-     * Returns the callable that corresponds to the string name.
-     * Returns null if there is no equivalent callable.
-     */
-    private function getCallable($method)
-    {
-        return @call_user_func($this->interpreter, $method);
-    }
-
-    /**
-     * Executes a callable with the supplied arguments, and returns the result.
-     *
-     * @param callable $callable
-     * A callable that will be executed.
-     *
-     * @param array $arguments
-     * Array of arguments that will be passed to the callable.
-     *
-     * @return mixed
-     * Returns the return value from the callable.
-     * Returns null on error.
-     */
-    private static function run($callable, $arguments)
-    {
-        if (self::isPositionalArguments($arguments)) {
-            return call_user_func_array($callable, $arguments);
-        }
-
-        return call_user_func($callable, $arguments);
-    }
-
-    /**
-     * Returns true if the argument array is a zero-indexed list of positional
-     * arguments, or false if the argument array is a set of named arguments.
-     *
-     * @param array $arguments
-     * Array of arguments.
-     *
-     * @return bool
-     * Returns true iff the arguments array is zero-indexed.
-     */
-    private static function isPositionalArguments($arguments)
-    {
-        $i = 0;
-
-        foreach ($arguments as $key => $value) {
-            if ($key !== $i++) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -328,36 +250,6 @@ class Server
     }
 
     /**
-     * Returns an error object explaining that the requested method is unknown.
-     *
-     * @param mixed $id
-     * Client-supplied value that allows the client to associate the server response
-     * with the original query.
-     *
-     * @return array
-     * Returns an error object.
-     */
-    private static function errorMethod($id)
-    {
-        return self::error($id, -32601, 'Method not found');
-    }
-
-    /**
-     * Returns an error object explaining that the method arguments were invalid.
-     *
-     * @param mixed $id
-     * Client-supplied value that allows the client to associate the server response
-     * with the original query.
-     *
-     * @return array
-     * Returns an error object.
-     */
-    private static function errorArguments($id)
-    {
-        return self::error($id, -32602, 'Invalid params');
-    }
-
-    /**
      * Returns a properly-formatted error object.
      *
      * @param mixed $id
@@ -375,15 +267,13 @@ class Server
      */
     private static function error($id, $code, $message)
     {
-        $error = array(
-            'code' => $code,
-            'message' => $message
-        );
-
         return array(
             'jsonrpc' => self::VERSION,
             'id' => $id,
-            'error' => $error
+            'error' => array(
+                'code' => $code,
+                'message' => $message
+            )
         );
     }
 

@@ -3,8 +3,8 @@
 ## Features
 
 * Fully compliant with the [JSON-RPC 2.0 specifications](http://www.jsonrpc.org/specification) (with 100% unit-test coverage)
-* Flexible: you can choose your own system for interpreting the JSON-RPC method strings
-* Minimalistic: just two tiny files
+* Flexible: you can use your own code to evaluate the JSON-RPC methods
+* Ultra-lightweight
 
 ## Requirements
 
@@ -21,20 +21,17 @@ This package is released under an open-source license: [LGPL-3.0](https://www.gn
 ```php
 $client = new Client();
 
-$client->query(1, 'Math/subtract', array(5, 3));
+$client->query(1, 'add', array(1, 2));
 
-$request = $client->encode(); // {"jsonrpc":"2.0","id":1,"method":"Math\/subtract","params":[5,3]}
+$message = $client->encode(); // {"jsonrpc":"2.0","id":1,"method":"add","params":[1,2]}
 ```
 
 ### Server
 
 ```php
-$translator = new Translator();
-$server = new Server($translator);
+$server = new Server(new Api());
 
-$request = '{"jsonrpc":"2.0","id":1,"method":"Math\/subtract","params":[5,3]}';
-
-$reply = $server->reply($request); // {"jsonrpc":"2.0","id":1,"result":2}
+$reply = $server->reply($message); // {"jsonrpc":"2.0","id":1,"result":3}
 ```
 
 *See the "examples" folder for ready-to-use examples.*
@@ -45,7 +42,7 @@ If you're using [Composer](https://getcomposer.org/), you can use this package
 ([datto/json-rpc](https://packagist.org/packages/datto/json-rpc))
 by inserting a line into the "require" section of your "composer.json" file:
 ```
-        "datto/json-rpc": "~2.0"
+        "datto/json-rpc": "~3.0"
 ```
 
 ## Getting started
@@ -56,8 +53,7 @@ by inserting a line into the "require" section of your "composer.json" file:
 	php examples/server.php
 	```
 
-2. Take a look at the examples in the "tests" directory, and then replace them with
-your own code.
+2. Take a look at the code "examples/src"--then replace it with your own!
 
 ## Unit tests
 
