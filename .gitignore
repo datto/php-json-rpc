@@ -1,5 +1,4 @@
 .git/
-composer.lock
 vendor/
 coverage/
 .idea/
