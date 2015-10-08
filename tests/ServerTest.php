@@ -219,6 +219,31 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $this->compare($input, $output);
     }
 
+    public function testSerializer()
+    {
+
+        $input = '{"jsonrpc": "2.0", "method": "subtract", "params": [3, 2], "id": 1}';
+        $expectedJsonOutput = '{"jsonrpc": "2.0", "result": 1, "id": 1}';
+
+        /** @var \JMS\Serializer\SerializerInterface $serializer */
+        $serializer = $this->getMockBuilder('\JMS\Serializer\SerializerInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serializer
+            ->expects($this->any())
+            ->method('serialize')
+            ->will($this->returnValue($expectedJsonOutput));
+
+        $server = new Server(new Api(), $serializer);
+
+        $actualJsonOutput = $server->reply($input);
+
+        $expectedOutput = json_decode($expectedJsonOutput, true);
+        $actualOutput = json_decode($actualJsonOutput, true);
+
+        $this->assertEquals($expectedOutput, $actualOutput);
+    }
+
     private function compare($input, $expectedJsonOutput)
     {
         $server = new Server(new Api());

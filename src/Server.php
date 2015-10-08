@@ -23,6 +23,7 @@
  */
 
 namespace Datto\JsonRpc;
+use JMS\Serializer\SerializerInterface;
 
 /**
  * Class Server
@@ -38,12 +39,17 @@ class Server
     /** @var Evaluator */
     private $evaluator;
 
+    /** @var \JMS\Serializer\SerializerInterface|null */
+    private $serializer = null;
+
     /**
      * @param Evaluator $evaluator
+     * @param SerializerInterface|null $serializer
      */
-    public function __construct(Evaluator $evaluator)
+    public function __construct(Evaluator $evaluator, SerializerInterface $serializer = null)
     {
         $this->evaluator = $evaluator;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -67,7 +73,7 @@ class Server
             return null;
         }
 
-        return json_encode($output);
+        return $this->encode($output);
     }
 
     /**
@@ -222,6 +228,21 @@ class Server
         try {
             $this->evaluator->evaluate($method, $arguments);
         } catch (Exception $exception) {
+        }
+    }
+
+    /**
+     * Use a serializer to encode if defined, otherwise use json_encode
+     *
+     * @param $processOutput
+     * @return string
+     */
+    private function encode($processOutput)
+    {
+        if ($this->serializer === null) {
+            return json_encode($processOutput);
+        } else {
+            return $this->serializer->serialize($processOutput, 'json');
         }
     }
 
