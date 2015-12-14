@@ -1,18 +1,27 @@
 # JSON-RPC for PHP
 
+
+## Overview
+
+This package allows you to create and evaluate JSON-RPC messages, using your own
+PHP code to evaluate the requests.
+
+This package simply abstracts away the details of the JSON-RPC messaging format.
+It does *not* provide a transportation layer.
+
+* If you need to send messages over HTTP(S), then you should use the
+[php-json-rpc-http](https://github.com/datto/php-json-rpc-http) package instead.
+* If you need to send messages over an SSH tunnel, then you should use the
+[php-json-rpc-ssh](https://github.com/datto/php-json-rpc-http) package.
+
+
 ## Features
 
-* Fully compliant with the [JSON-RPC 2.0 specifications](http://www.jsonrpc.org/specification) (with 100% unit-test coverage)
-* Flexible: you can use your own code to evaluate the JSON-RPC methods
-* Ultra-lightweight
+* Correct: fully compliant with the [JSON-RPC 2.0 specifications](http://www.jsonrpc.org/specification) (100% unit-test coverage)
+* Flexible: you can use your own code to evaluate the JSON-RPC method strings
+* Minimalistic: extremely lightweight
+* Ready to use, with working examples
 
-## Requirements
-
-* PHP >= 5.3
-
-## License
-
-This package is released under an open-source license: [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 ## Examples
 
@@ -29,12 +38,25 @@ $message = $client->encode(); // {"jsonrpc":"2.0","id":1,"method":"add","params"
 ### Server
 
 ```php
-$server = new Server(new Api());
+$api = new Api();
+
+$server = new Server($api);
 
 $reply = $server->reply($message); // {"jsonrpc":"2.0","id":1,"result":3}
 ```
 
-*See the "examples" folder for ready-to-use examples.*
+*See the "examples" folder for the full examples.*
+
+
+## Requirements
+
+* PHP >= 5.3
+
+
+## License
+
+This package is released under an open-source license: [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html)
+
 
 ## Installation
 
@@ -44,6 +66,7 @@ by inserting a line into the "require" section of your "composer.json" file:
 ```
         "datto/json-rpc": "~3.0"
 ```
+
 
 ## Getting started
 
@@ -55,12 +78,14 @@ by inserting a line into the "require" section of your "composer.json" file:
 
 2. Take a look at the code "examples/src"--then replace it with your own!
 
+
 ## Unit tests
 
 You can run the suite of unit tests from the project directory like this:
 ```
 ./vendor/bin/phpunit
 ```
+
 
 ## Author
 
