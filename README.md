@@ -10,7 +10,7 @@ This package simply abstracts away the details of the JSON-RPC messaging format.
 It does *not* provide a transportation layer:
 * If you need to send messages over HTTP(S), then you should use the
 [php-json-rpc-http](https://github.com/datto/php-json-rpc-http) package instead.
-* If you need to send messages over an SSH tunnel, then you should use the
+* If you need to send messages over SSH, then you should use the
 [php-json-rpc-ssh](https://github.com/datto/php-json-rpc-ssh) package.
 
 
@@ -75,7 +75,7 @@ by inserting a line into the "require" section of your "composer.json" file:
 	php examples/server.php
 	```
 
-2. Take a look at the code "examples/src"--then replace it with your own!
+2. Take a look at the code "examples/src"—then replace it with your own!
 
 
 ## Unit tests
