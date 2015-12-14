@@ -11,7 +11,7 @@ It does *not* provide a transportation layer:
 * If you need to send messages over HTTP(S), then you should use the
 [php-json-rpc-http](https://github.com/datto/php-json-rpc-http) package instead.
 * If you need to send messages over an SSH tunnel, then you should use the
-[php-json-rpc-ssh](https://github.com/datto/php-json-rpc-http) package.
+[php-json-rpc-ssh](https://github.com/datto/php-json-rpc-ssh) package.
 
 
 ## Features
