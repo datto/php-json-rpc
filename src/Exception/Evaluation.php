@@ -44,7 +44,8 @@ class Evaluation extends Exception implements JsonRpc\Exception
 
     private static function isValidCode($code)
     {
-        return is_int($code) && (($code < -32768) || (-32000 < $code));
+        // as defined by the JSON-RPC 2.0 spec, see http://www.jsonrpc.org/specification#error_object
+        return is_int($code) && (-32768 <= $code && $code <= -32000);
     }
 
     private static function isValidMessage($message)
