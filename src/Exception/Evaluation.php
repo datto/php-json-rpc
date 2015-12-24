@@ -55,10 +55,10 @@ class Evaluation extends Exception implements JsonRpc\Exception
      * as application-defined error codes. You can safely use any integer value
      * from outside the reserved range.
      */
-    public function __construct($message = '', $code = 0)
+    public function __construct($message = '', $code = 1)
     {
         if (!self::isValidCode($code)) {
-            $code = 0;
+            $code = 1;
         }
 
         if (!self::isValidMessage($message)) {
