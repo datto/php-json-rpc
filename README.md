@@ -6,15 +6,14 @@
 This package allows you to create and evaluate JSON-RPC messages, using your own
 PHP code to evaluate the requests.
 
-This package simply abstracts away the details of the JSON-RPC messaging format.
-It allows you to create and evaluate any JSON-RPC message. It does *not*
-provide a transport layer—which you'll also need if you want to send or
-receive messages over a distance! One of the beautiful features of JSON-RPC is
-that you can use *any* transport layer to send your messages. This package makes
-that possible.
+This package allows you to create and evaluate any JSON-RPC message. It
+implements the JSON-RPC specifications, but does *not* provide a transport
+layer—which you'll also need if you want to send or receive messages over a
+distance! One of the beautiful features of JSON-RPC is that you can use *any*
+transport layer to carry your messages: This package gives you that option.
 
-If you're looking for a complete, end-to-end solution—including the transport
-layer—then you should use one of these packages instead:
+If you're looking for an end-to-end solution, with the transport layer included,
+then you should use one of these alternative packages instead:
 * To send messages over HTTP(S), use the
 [php-json-rpc-http](https://github.com/datto/php-json-rpc-http) package.
 * To send messages over SSH, use the
