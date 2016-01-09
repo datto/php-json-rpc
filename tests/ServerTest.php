@@ -31,45 +31,45 @@ class ServerTest extends PHPUnit_Framework_TestCase
 {
     public function testArgumentsPositionalA()
     {
-        $input = '{"jsonrpc": "2.0", "method": "subtract", "params": [3, 2], "id": 1}';
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "subtract", "params": [3, 2]}';
 
-        $output = '{"jsonrpc": "2.0", "result": 1, "id": 1}';
+        $output = '{"jsonrpc": "2.0", "id": 1, "result": 1}';
 
         $this->compare($input, $output);
     }
 
     public function testArgumentsPositionalB()
     {
-        $input = '{"jsonrpc": "2.0", "method": "subtract", "params": [2, 3], "id": 1}';
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "subtract", "params": [2, 3]}';
 
-        $output = '{"jsonrpc": "2.0", "result": -1, "id": 1}';
+        $output = '{"jsonrpc": "2.0", "id": 1, "result": -1}';
 
         $this->compare($input, $output);
     }
 
     public function testArgumentsNamedA()
     {
-        $input = '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 3, "subtrahend": 2}, "id": 1}';
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "subtract", "params": {"minuend": 3, "subtrahend": 2}}';
 
-        $output = '{"jsonrpc": "2.0", "result": 1, "id": 1}';
+        $output = '{"jsonrpc": "2.0", "id": 1, "result": 1}';
 
         $this->compare($input, $output);
     }
 
     public function testArgumentsInvalid()
     {
-        $input = '{"jsonrpc": "2.0", "method": "subtract", "params": [], "id": 1}';
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "subtract", "params": []}';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32602, "message": "Invalid params"}, "id": "1"}';
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": -32602, "message": "Invalid params"}}';
 
         $this->compare($input, $output);
     }
 
     public function testArgumentsNamedB()
     {
-        $input = '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 2, "minuend": 3}, "id": 1}';
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "subtract", "params": {"subtrahend": 2, "minuend": 3}}';
 
-        $output = '{"jsonrpc": "2.0", "result": 1, "id": 1}';
+        $output = '{"jsonrpc": "2.0", "id": 1, "result": 1}';
 
         $this->compare($input, $output);
     }
@@ -94,9 +94,9 @@ class ServerTest extends PHPUnit_Framework_TestCase
 
     public function testUndefinedMethod()
     {
-        $input ='{"jsonrpc": "2.0", "method": "undefined", "id": "1"}';
+        $input ='{"jsonrpc": "2.0", "id": 1, "method": "undefined"}';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "1"}';
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": -32601, "message": "Method not found"}}';
 
         $this->compare($input, $output);
     }
@@ -105,7 +105,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
     {
         $input = '{"jsonrpc": "2.0", "method": "foobar", "params": "bar", "baz]';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": null}';
+        $output = '{"jsonrpc": "2.0", "id": null, "error": {"code": -32700, "message": "Parse error"}}';
 
         $this->compare($input, $output);
     }
@@ -114,7 +114,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
     {
         $input = '{"jsonrpc": "2.0", "method": 1, "params": [1, 2]}';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}';
+        $output = '{"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}}';
 
         $this->compare($input, $output);
     }
@@ -123,7 +123,52 @@ class ServerTest extends PHPUnit_Framework_TestCase
     {
         $input = '{"jsonrpc": "2.0", "method": "foobar", "params": "bar"}';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}';
+        $output = '{"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}}';
+
+        $this->compare($input, $output);
+    }
+
+    public function testImplementationError()
+    {
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "implementation error"}';
+
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": -32099, "message": "Server error"}}';
+
+        $this->compare($input, $output);
+    }
+
+    public function testImplementationErrorData()
+    {
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "implementation error", "params": ["details"]}';
+
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": -32099, "message": "Server error", "data": "details"}}';
+
+        $this->compare($input, $output);
+    }
+
+    public function testApplicationError()
+    {
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "application error"}';
+
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": 1, "message": "Application error"}}';
+
+        $this->compare($input, $output);
+    }
+
+    public function testApplicationErrorData()
+    {
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "application error", "params": ["details"]}';
+
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": 1, "message": "Application error", "data": "details"}}';
+
+        $this->compare($input, $output);
+    }
+
+    public function testInvalidError()
+    {
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "invalid error"}';
+
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": 1, "message": ""}}';
 
         $this->compare($input, $output);
     }
@@ -132,7 +177,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
     {
         $input = '{"jsonrpc": "2.0", "method": "foobar", "params": [1, 2], "id": [1]}';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}';
+        $output = '{"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}}';
 
         $this->compare($input, $output);
     }
@@ -144,7 +189,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
             {"jsonrpc": "2.0", "method"
         ]';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": null}';
+        $output = '{"jsonrpc": "2.0", "id": null, "error": {"code": -32700, "message": "Parse error"}}';
 
         $this->compare($input, $output);
     }
@@ -154,7 +199,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $input = '[
         ]';
 
-        $output = '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}';
+        $output = '{"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}}';
 
         $this->compare($input, $output);
     }
@@ -166,7 +211,7 @@ class ServerTest extends PHPUnit_Framework_TestCase
         ]';
 
         $output = '[
-            {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}
+            {"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}}
         ]';
 
         $this->compare($input, $output);
@@ -181,9 +226,9 @@ class ServerTest extends PHPUnit_Framework_TestCase
         ]';
 
         $output = '[
-            {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null},
-            {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null},
-            {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}
+            {"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}},
+            {"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}},
+            {"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}}
         ]';
 
         $this->compare($input, $output);
@@ -199,9 +244,9 @@ class ServerTest extends PHPUnit_Framework_TestCase
         ]';
 
         $output = '[
-            {"jsonrpc": "2.0", "result": 2, "id": "1"},
-            {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null},
-            {"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "5"}
+            {"jsonrpc": "2.0", "id": "1", "result": 2},
+            {"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Invalid Request"}},
+            {"jsonrpc": "2.0", "id": "5", "error": {"code": -32601, "message": "Method not found"}}
         ]';
 
         $this->compare($input, $output);
@@ -227,6 +272,6 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $expectedOutput = json_decode($expectedJsonOutput, true);
         $actualOutput = json_decode($actualJsonOutput, true);
 
-        $this->assertEquals($expectedOutput, $actualOutput);
+        $this->assertSame($expectedOutput, $actualOutput);
     }
 }

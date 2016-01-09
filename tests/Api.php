@@ -31,11 +31,22 @@ class Api implements Evaluator
 {
     public function evaluate($method, $arguments)
     {
-        if ($method === 'subtract') {
-            return self::subtract($arguments);
-        }
+        switch ($method) {
+            case 'subtract':
+                return self::subtract($arguments);
 
-        throw new Exception\Method();
+            case 'implementation error':
+                return self::implementationError($arguments);
+
+            case 'application error':
+                return self::applicationError($arguments);
+
+            case 'invalid error':
+                return self::invalidError();
+
+            default:
+                throw new Exception\Method();
+        }
     }
 
     private static function subtract($arguments)
@@ -52,5 +63,22 @@ class Api implements Evaluator
         }
 
         return $a - $b;
+    }
+
+    private static function implementationError($arguments)
+    {
+        throw new Exception\Implementation(-32099, @$arguments[0]);
+    }
+
+    private static function applicationError($arguments)
+    {
+        throw new Exception\Application("Application error", 1, @$arguments[0]);
+    }
+
+    private static function invalidError()
+    {
+        $invalid = new \StdClass();
+
+        throw new Exception\Application($invalid, $invalid, $invalid);
     }
 }

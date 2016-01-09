@@ -24,20 +24,26 @@
 
 namespace Datto\JsonRpc\Exception;
 
-use Exception;
 use Datto\JsonRpc;
 
 /**
- * Class Evaluation
+ * Class Application
  * @package Datto\JsonRpc\Exception
  *
- * The JSON-RPC 2.0 specifications allow you to define your own error objects!
- * You can use this to communicate any issues that arise during the evaluation
- * of a request.
+ * The JSON-RPC 2.0 specifications allows each application that evaluates a user
+ * request to define its own custom error codes:
  *
  * @link http://www.jsonrpc.org/specification#error_object
+ *
+ * You can use this flexibility to communicate any issues that arise while
+ * your application is evaluating a user request.
+ *
+ * However:
+ *
+ * If one or more of the user-supplied arguments are invalid, then you should
+ * report the issue through an "Argument" exception instead.
  */
-class Evaluation extends Exception implements JsonRpc\Exception
+class Application extends JsonRpc\Exception
 {
     /**
      * @param string $message
@@ -46,39 +52,44 @@ class Evaluation extends Exception implements JsonRpc\Exception
      *
      * @param int $code
      * Integer identifying the type of error that occurred. As the author of
-     * your API, you are free to define the error codes that you find useful
-     * for your application.
+     * a server-side application, you are free to define any error codes
+     * that you find useful for your application.
      *
      * Please be aware that the error codes in the range from -32768 to -32000,
-     * inclusive, have special meanings under the JSON-RPC 2.0 specification!
-     * These error codes have already been taken, so they cannot also be used
-     * as application-defined error codes. You can safely use any integer value
-     * from outside the reserved range.
+     * inclusive, have special meanings under the JSON-RPC 2.0 specification:
+     * These error codes have already been taken, so they cannot be redefined
+     * as application-defined error codes! However, you can safely use any
+     * integer from outside this reserved range.
+     *
+     * @param null|boolean|integer|float|string|array $data
+     * An optional primitive value that contains additional information about
+     * the error.You're free to define the format of this data (e.g. you could
+     * supply an array with detailed error information). Alternatively, you may
+     * omit this field by providing a null value.
      */
-    public function __construct($message = '', $code = 1)
+    public function __construct($message, $code, $data = null)
     {
         if (!self::isValidCode($code)) {
             $code = 1;
         }
 
-        if (!self::isValidMessage($message)) {
-            $message = '';
-        }
-
-        parent::__construct($message, $code);
+        parent::__construct($message, $code, $data);
     }
 
     /**
+     * Determines whether a value can be used as an application-defined error
+     * code.
+     *
      * @param int $code
      * Integer identifying the type of error that occurred. As the author of
-     * your API, you are free to define the error codes that you find useful
-     * for your application.
+     * a server-side application, you are free to define any error codes
+     * that you find useful for your application.
      *
      * Please be aware that the error codes in the range from -32768 to -32000,
-     * inclusive, have special meanings under the JSON-RPC 2.0 specification!
-     * These error codes have already been taken, so they cannot also be used
-     * as application-defined error codes. You can safely use any integer value
-     * from outside the reserved range.
+     * inclusive, have special meanings under the JSON-RPC 2.0 specification:
+     * These error codes have already been taken, so they cannot be redefined
+     * as application-defined error codes! However, you can safely use any
+     * integer from outside this reserved range.
      *
      * @return bool
      * Returns true iff the value can be used as an application-defined
@@ -87,19 +98,5 @@ class Evaluation extends Exception implements JsonRpc\Exception
     private static function isValidCode($code)
     {
         return is_int($code) && (($code < -32768) || (-32000 < $code));
-    }
-
-    /**
-     * @param string $message
-     * Short description of the error that occurred. This message SHOULD
-     * be limited to a single, concise sentence.
-     *
-     * @return bool
-     * Returns true iff the value can be used as an application-defined
-     * error message.
-     */
-    private static function isValidMessage($message)
-    {
-        return is_string($message);
     }
 }

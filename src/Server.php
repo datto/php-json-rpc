@@ -204,7 +204,11 @@ class Server
             $result = $this->evaluator->evaluate($method, $arguments);
             return self::response($id, $result);
         } catch (Exception $exception) {
-            return self::error($id, $exception->getCode(), $exception->getMessage());
+            $code = $exception->getCode();
+            $message = $exception->getMessage();
+            $data = $exception->getData();
+
+            return self::error($id, $code, $message, $data);
         }
     }
 
@@ -262,18 +266,28 @@ class Server
      * @param string $message
      * Concise description of the error (ideally a single sentence).
      *
+     * @param null|boolean|integer|float|string|array $data
+     * An optional primitive value that contains additional information about
+     * the error.
+     *
      * @return array
      * Returns an error object.
      */
-    private static function error($id, $code, $message)
+    private static function error($id, $code, $message, $data = null)
     {
+        $error = array(
+            'code' => $code,
+            'message' => $message
+        );
+
+        if ($data !== null) {
+            $error['data'] = $data;
+        }
+
         return array(
             'jsonrpc' => self::VERSION,
             'id' => $id,
-            'error' => array(
-                'code' => $code,
-                'message' => $message
-            )
+            'error' => $error
         );
     }
 

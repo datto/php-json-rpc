@@ -24,10 +24,9 @@
 
 namespace Datto\JsonRpc\Exception;
 
-use Exception;
 use Datto\JsonRpc;
 
-class Method extends Exception implements JsonRpc\Exception
+class Method extends JsonRpc\Exception
 {
     public function __construct()
     {
