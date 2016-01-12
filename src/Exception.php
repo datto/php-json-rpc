@@ -48,18 +48,6 @@ abstract class Exception extends \Exception
      */
     public function __construct($message, $code, $data = null)
     {
-        if (!self::isValidMessage($message)) {
-            $message = '';
-        }
-
-        if (!self::isValidCode($code)) {
-            $code = 1;
-        }
-
-        if (!self::isValidData($data)) {
-            $data = null;
-        }
-
         parent::__construct($message, $code);
 
         $this->data = $data;
@@ -72,63 +60,5 @@ abstract class Exception extends \Exception
     public function getData()
     {
         return $this->data;
-    }
-
-    /**
-     * Determines whether a value can be used as an error message.
-     *
-     * @param string $input
-     * Short description of the error that occurred. This message SHOULD
-     * be limited to a single, concise sentence.
-     *
-     * @return bool
-     * Returns true iff the value can be used as an error message.
-     */
-    private static function isValidMessage($input)
-    {
-        return is_string($input);
-    }
-
-    /**
-     * Determines whether a value can be used as an error code.
-     *
-     * @param $code
-     * Integer identifying the type of error that occurred. This code MUST
-     * follow the JSON-RPC 2.0 requirements for error codes:
-     *
-     * @link http://www.jsonrpc.org/specification#error_object
-     *
-     * @return bool
-     * Returns true iff the value can be used as an error code.
-     */
-    private static function isValidCode($code)
-    {
-        return is_int($code);
-    }
-
-    /**
-     * Determines whether a value can be used as the data value in an error
-     * object.
-     *
-     * @param null|boolean|integer|float|string|array $input
-     * An optional primitive value that contains additional information about
-     * the error.You're free to define the format of this data (e.g. you could
-     * supply an array with detailed error information). Alternatively, you may
-     * omit this field by supplying a null value.
-     *
-     * @return bool
-     * Returns true iff the value can be used as the data value in an error
-     * object.
-     */
-    private static function isValidData($input)
-    {
-        $type = gettype($input);
-
-        return ($type === 'array')
-            || ($type === 'string')
-            || ($type === 'double')
-            || ($type === 'integer')
-            || ($type === 'boolean')
-            || ($type === 'NULL');
     }
 }

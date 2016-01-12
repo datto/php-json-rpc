@@ -38,11 +38,14 @@ class Api implements Evaluator
             case 'implementation error':
                 return self::implementationError($arguments);
 
+            case 'invalid implementation error':
+                return self::invalidImplementationError();
+
             case 'application error':
                 return self::applicationError($arguments);
 
-            case 'invalid error':
-                return self::invalidError();
+            case 'invalid application error':
+                return self::invalidApplicationError();
 
             default:
                 throw new Exception\Method();
@@ -70,12 +73,19 @@ class Api implements Evaluator
         throw new Exception\Implementation(-32099, @$arguments[0]);
     }
 
+    private static function invalidImplementationError()
+    {
+        $invalid = new \StdClass();
+
+        throw new Exception\Implementation($invalid, $invalid);
+    }
+
     private static function applicationError($arguments)
     {
         throw new Exception\Application("Application error", 1, @$arguments[0]);
     }
 
-    private static function invalidError()
+    private static function invalidApplicationError()
     {
         $invalid = new \StdClass();
 

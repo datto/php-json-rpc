@@ -84,11 +84,11 @@ class Server
     private function processInput($input)
     {
         if (!is_array($input)) {
-            return self::errorJson();
+            return self::jsonError();
         }
 
         if (count($input) === 0) {
-            return self::errorRequest();
+            return self::requestError();
         }
 
         if (isset($input[0])) {
@@ -141,19 +141,19 @@ class Server
     private function processRequest($request)
     {
         if (!is_array($request)) {
-            return self::errorRequest();
+            return self::requestError();
         }
 
         $version = @$request['jsonrpc'];
 
         if (@$version !== self::VERSION) {
-            return self::errorRequest();
+            return self::requestError();
         }
 
         $method = @$request['method'];
 
         if (!is_string($method)) {
-            return self::errorRequest();
+            return self::requestError();
         }
 
         // The 'params' key is optional, but must be non-null when provided
@@ -161,7 +161,7 @@ class Server
             $arguments = $request['params'];
 
             if (!is_array($arguments)) {
-                return self::errorRequest();
+                return self::requestError();
             }
         } else {
             $arguments = array();
@@ -172,7 +172,7 @@ class Server
             $id = $request['id'];
 
             if (!is_int($id) && !is_float($id) && !is_string($id) && ($id !== null)) {
-                return self::errorRequest();
+                return self::requestError();
             }
 
             return $this->processQuery($id, $method, $arguments);
@@ -236,7 +236,7 @@ class Server
      * @return array
      * Returns an error object.
      */
-    private static function errorJson()
+    private static function jsonError()
     {
         return self::error(null, -32700, 'Parse error');
     }
@@ -248,7 +248,7 @@ class Server
      * @return array
      * Returns an error object.
      */
-    private static function errorRequest()
+    private static function requestError()
     {
         return self::error(null, -32600, 'Invalid Request');
     }

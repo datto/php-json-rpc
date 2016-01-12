@@ -146,6 +146,15 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $this->compare($input, $output);
     }
 
+    public function testImplementationErrorInvalid()
+    {
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "invalid implementation error"}';
+
+        $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": -32099, "message": "Server error"}}';
+
+        $this->compare($input, $output);
+    }
+
     public function testApplicationError()
     {
         $input = '{"jsonrpc": "2.0", "id": 1, "method": "application error"}';
@@ -164,9 +173,9 @@ class ServerTest extends PHPUnit_Framework_TestCase
         $this->compare($input, $output);
     }
 
-    public function testInvalidError()
+    public function testApplicationErrorInvalid()
     {
-        $input = '{"jsonrpc": "2.0", "id": 1, "method": "invalid error"}';
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "invalid application error"}';
 
         $output = '{"jsonrpc": "2.0", "id": 1, "error": {"code": 1, "message": ""}}';
 
