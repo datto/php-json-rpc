@@ -69,7 +69,7 @@ If you're using [Composer](https://getcomposer.org/), you can use this package
 ([datto/json-rpc](https://packagist.org/packages/datto/json-rpc))
 by inserting a line into the "require" section of your "composer.json" file:
 ```
-        "datto/json-rpc": "~3.0"
+        "datto/json-rpc": "~4.0"
 ```
 
 
