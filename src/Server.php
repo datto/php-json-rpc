@@ -59,9 +59,7 @@ class Server
      */
     public function reply($json)
     {
-        $input = @json_decode($json, true);
-
-        $output = $this->processInput($input);
+        $output = $this->processInput($json);
 
         if ($output === null) {
             return null;
@@ -73,18 +71,24 @@ class Server
     /**
      * Processes the user input, and prepares a response (if necessary).
      *
-     * @param array $input
-     * Single request object, or an array of request objects.
+     * @param string $json
+     * Single request object, or an array of request objects, as a JSON string.
      *
      * @return array|null
      * Returns a response object (or an error object) when a query is made.
      * Returns an array of response/error objects when multiple queries are made.
      * Returns null when no response is necessary.
      */
-    private function processInput($input)
+    private function processInput($json)
     {
+        if (!is_string($json)) {
+            return self::parseError();
+        }
+
+        $input = json_decode($json, true);
+
         if (!is_array($input)) {
-            return self::jsonError();
+            return self::parseError();
         }
 
         if (count($input) === 0) {
@@ -144,16 +148,25 @@ class Server
             return self::requestError();
         }
 
-        $version = @$request['jsonrpc'];
+        // The presence of the 'id' key indicates that a response is expected
+        $isQuery = array_key_exists('id', $request);
 
-        if (@$version !== self::VERSION) {
+        $id = &$request['id'];
+
+        if (($id !== null) && !is_int($id) && !is_float($id) && !is_string($id)) {
             return self::requestError();
         }
 
-        $method = @$request['method'];
+        $version = &$request['jsonrpc'];
+
+        if ($version !== self::VERSION) {
+            return self::requestError($id);
+        }
+
+        $method = &$request['method'];
 
         if (!is_string($method)) {
-            return self::requestError();
+            return self::requestError($id);
         }
 
         // The 'params' key is optional, but must be non-null when provided
@@ -161,20 +174,13 @@ class Server
             $arguments = $request['params'];
 
             if (!is_array($arguments)) {
-                return self::requestError();
+                return self::requestError($id);
             }
         } else {
             $arguments = array();
         }
 
-        // The presence of the 'id' key indicates that a response is expected
-        if (array_key_exists('id', $request)) {
-            $id = $request['id'];
-
-            if (!is_int($id) && !is_float($id) && !is_string($id) && ($id !== null)) {
-                return self::requestError();
-            }
-
+        if ($isQuery) {
             return $this->processQuery($id, $method, $arguments);
         }
 
@@ -236,7 +242,7 @@ class Server
      * @return array
      * Returns an error object.
      */
-    private static function jsonError()
+    private static function parseError()
     {
         return self::error(null, -32700, 'Parse error');
     }
@@ -245,12 +251,16 @@ class Server
      * Returns an error object explaining that the JSON input is not a valid
      * request object.
      *
+     * @param mixed $id
+     * Client-supplied value that allows the client to associate the server response
+     * with the original query.
+     *
      * @return array
      * Returns an error object.
      */
-    private static function requestError()
+    private static function requestError($id = null)
     {
-        return self::error(null, -32600, 'Invalid Request');
+        return self::error($id, -32600, 'Invalid Request');
     }
 
     /**
