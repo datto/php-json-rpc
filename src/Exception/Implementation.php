@@ -59,7 +59,7 @@ class Implementation extends JsonRpc\Exception
      * Integer identifying the type of error that occurred. As the author of a
      * JSON-RPC 2.0 implementation, you are free to define any custom error code
      * that you find useful for your implementation, as long as your error code
-     * falls within the range from -32000 to -32099 inclusive.
+     * falls within the range from -32099 to -32000 inclusive.
      *
      * @param null|boolean|integer|float|string|array $data
      * An optional primitive value that contains additional information about
@@ -89,7 +89,7 @@ class Implementation extends JsonRpc\Exception
      */
     private static function isValidCode($code)
     {
-        return is_int($code) && (-32000 <= $code) && ($code <= -32099);
+        return is_int($code) && (-32099 <= $code) && ($code <= -32000);
     }
 
     /**
