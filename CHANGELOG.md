@@ -12,4 +12,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
  - The "Client::decode" method now returns a list of "Response" objects (rather than an associative array of raw JSON-RPC 2.0 keys and values)
- - The four exception classes have been moved (e.g. "Datto\JsonRpc\Exception\Application" => "Datto\JsonRpc\Exception**s**\**Application**Exception")
+ - The four exception classes have been moved (e.g. "Datto\JsonRpc\Exception\Application" => "Datto\JsonRpc\Exception**s**\\**Application**Exception")
