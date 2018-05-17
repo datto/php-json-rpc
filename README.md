@@ -83,18 +83,18 @@ composer require "datto/json-rpc" "~5.0"
 2. Take a look at the code "examples/src"—then replace it with your own!
 
 
-## Changelog
-
-See what has changed:
-[Changelog](https://github.com/datto/php-json-rpc/blob/master/CHANGELOG.md)
-
-
 ## Unit tests
 
 You can run the suite of unit tests from the project directory like this:
 ```
 ./vendor/bin/phpunit
 ```
+
+
+## Changelog
+
+See what has changed:
+[Changelog](https://github.com/datto/php-json-rpc/blob/master/CHANGELOG.md)
 
 
 ## Author
