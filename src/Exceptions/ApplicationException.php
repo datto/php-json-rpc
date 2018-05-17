@@ -22,28 +22,30 @@
  * @copyright 2015 Datto, Inc.
  */
 
-namespace Datto\JsonRpc\Exception;
-
-use Datto\JsonRpc;
+namespace Datto\JsonRpc\Exceptions;
 
 /**
- * Class Application
- * @package Datto\JsonRpc\Exception
+ * Class ApplicationException
+ * @package Datto\JsonRpc\Exceptions
  *
- * The JSON-RPC 2.0 specifications allows each application that evaluates a user
- * request to define its own custom error codes:
+ * If a method cannot be called (e.g. if the method doesn't exist, or is a
+ * private method), then you should throw a "MethodException".
+ *
+ * If the method is callable, but the user-supplied arguments are incompatible
+ * with the method's type signature, or an argument is invalid, then you should
+ * throw an "ArgumentException".
+ *
+ * If the method is callable, and the user-supplied arguments are valid, but an
+ * issue arose when the server-side application was evaluating the method, then
+ * you should throw an "ApplicationException".
+ *
+ * If you've extended this JSON-RPC 2.0 library, and an issue arose in your
+ * implementation of the JSON-RPC 2.0 specifications, then you should throw an
+ * "ImplementationException".
  *
  * @link http://www.jsonrpc.org/specification#error_object
- *
- * You can throw an "Application" exception to communicate any issues that arise
- * while your application is evaluating a user request.
- *
- * However:
- *
- * If one or more of the user-supplied arguments are invalid, then you should
- * report the issue through an "Argument" exception instead.
  */
-class Application extends JsonRpc\Exception
+class ApplicationException extends Exception
 {
     /**
      * @param string $message
@@ -53,10 +55,10 @@ class Application extends JsonRpc\Exception
      * @param int $code
      * Integer identifying the type of error that occurred. As the author of
      * a server-side application, you are free to define any error codes
-     * that you find useful for your application.
+     * that you find useful for your application--with one exception:
      *
      * Please be aware that the error codes in the range from -32768 to -32000,
-     * inclusive, have special meanings under the JSON-RPC 2.0 specification:
+     * inclusive, have special meanings under the JSON-RPC 2.0 specification.
      * These error codes have already been taken, so they cannot be redefined
      * as application-defined error codes! However, you can safely use any
      * integer from outside this reserved range.

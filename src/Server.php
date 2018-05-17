@@ -24,6 +24,8 @@
 
 namespace Datto\JsonRpc;
 
+use Datto\JsonRpc\Exceptions\Exception;
+
 /**
  * Class Server
  *

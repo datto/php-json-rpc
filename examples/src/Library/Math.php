@@ -27,13 +27,13 @@ namespace Datto\JsonRpc\Examples\Library;
 class Math
 {
     /**
-     * Returns the value $a + $b.
+     * Returns the value $a + $b
      *
      * @param int $a
      * @param int $b
      *
      * @return int
-     * Returns the value $a + $b.
+     * Returns the value $a + $b
      */
     public static function add($a, $b)
     {

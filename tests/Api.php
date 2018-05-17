@@ -25,7 +25,7 @@
 namespace Datto\JsonRpc\Tests;
 
 use Datto\JsonRpc\Evaluator;
-use Datto\JsonRpc\Exception;
+use Datto\JsonRpc\Exceptions;
 
 class Api implements Evaluator
 {
@@ -48,7 +48,7 @@ class Api implements Evaluator
                 return self::invalidApplicationError();
 
             default:
-                throw new Exception\Method();
+                throw new Exceptions\MethodException();
         }
     }
 
@@ -62,7 +62,7 @@ class Api implements Evaluator
         }
 
         if (!is_int($a) || !is_int($b) || (count($arguments) !== 2)) {
-            throw new Exception\Argument();
+            throw new Exceptions\ArgumentException();
         }
 
         return $a - $b;
@@ -70,25 +70,25 @@ class Api implements Evaluator
 
     private static function implementationError($arguments)
     {
-        throw new Exception\Implementation(-32099, @$arguments[0]);
+        throw new Exceptions\ImplementationException(-32099, @$arguments[0]);
     }
 
     private static function invalidImplementationError()
     {
         $invalid = new \StdClass();
 
-        throw new Exception\Implementation($invalid, $invalid);
+        throw new Exceptions\ImplementationException($invalid, $invalid);
     }
 
     private static function applicationError($arguments)
     {
-        throw new Exception\Application("Application error", 1, @$arguments[0]);
+        throw new Exceptions\ApplicationException("Application error", 1, @$arguments[0]);
     }
 
     private static function invalidApplicationError()
     {
         $invalid = new \StdClass();
 
-        throw new Exception\Application($invalid, $invalid, $invalid);
+        throw new Exceptions\ApplicationException($invalid, $invalid, $invalid);
     }
 }

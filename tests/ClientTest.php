@@ -26,6 +26,8 @@ namespace Datto\JsonRpc\Tests;
 
 use PHPUnit_Framework_TestCase;
 use Datto\JsonRpc\Client;
+use Datto\JsonRpc\Response;
+use Datto\JsonRpc\Error;
 
 class ClientTest extends PHPUnit_Framework_TestCase
 {
@@ -70,15 +72,37 @@ class ClientTest extends PHPUnit_Framework_TestCase
         $this->compare($client, null);
     }
 
-    public function testDecode()
+    public function testDecodeResult()
     {
-        $reply = '{"jsonrpc": "2.0", "result": 1, "id": 1}';
+        $reply = '{"jsonrpc":"2.0","result":2,"id":1}';
 
         $client = new Client();
         $actualOutput = $client->decode($reply);
-        $expectedOutput = @json_decode($reply, true);
+        $response = new Response(1, 2, false);
+        $expectedOutput = array($response);
 
-        $this->assertSame($expectedOutput, $actualOutput);
+        $this->assertSameValues($expectedOutput, $actualOutput);
+    }
+
+    public function testDecodeError()
+    {
+        $reply = '{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found"}}';
+
+        $client = new Client();
+        $actualOutput = $client->decode($reply);
+        $error = new Error('Method not found', -32601, null);
+        $response = new Response(1, $error, true);
+        $expectedOutput = array($response);
+
+        $this->assertSameValues($expectedOutput, $actualOutput);
+    }
+
+    private function assertSameValues($expected, $actual)
+    {
+        $expectedPhp = var_export($expected, true);
+        $actualPhp = var_export($actual, true);
+
+        $this->assertSame($expectedPhp, $actualPhp);
     }
 
     private function compare(Client $client, $expectedJsonOutput)

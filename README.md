@@ -50,7 +50,7 @@ $server = new Server($api);
 $reply = $server->reply($message); // {"jsonrpc":"2.0","id":1,"result":3}
 ```
 
-*See the "examples" folder for the full examples.*
+*See the [examples](https://github.com/datto/php-json-rpc/tree/master/examples) folder for full working examples.*
 
 
 ## Requirements
@@ -65,11 +65,10 @@ This package is released under an open-source license: [LGPL-3.0](https://www.gn
 
 ## Installation
 
-If you're using [Composer](https://getcomposer.org/), you can use this package
-([datto/json-rpc](https://packagist.org/packages/datto/json-rpc))
-by inserting a line into the "require" section of your "composer.json" file:
+If you're using [Composer](https://getcomposer.org/), you can include this library
+([datto/json-rpc](https://packagist.org/packages/datto/json-rpc)) like this:
 ```
-        "datto/json-rpc": "~4.0"
+composer require "datto/json-rpc" "~5.0"
 ```
 
 
@@ -82,6 +81,12 @@ by inserting a line into the "require" section of your "composer.json" file:
 	```
 
 2. Take a look at the code "examples/src"—then replace it with your own!
+
+
+## Changelog
+
+See what has changed:
+[Changelog](https://github.com/datto/php-json-rpc/blob/master/CHANGELOG.md)
 
 
 ## Unit tests
