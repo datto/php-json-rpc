@@ -47,9 +47,28 @@ class Api implements Evaluator
             case 'invalid application error':
                 return self::invalidApplicationError();
 
+            case 'methodWithAdditionalParam':
+                if (count($arguments) !== 3) {
+                    throw new Exceptions\ArgumentException();
+                }
+
+                return self::methodWithAdditionalParam($arguments['foo'], $arguments['username'], $arguments['password']);
+
             default:
                 throw new Exceptions\MethodException();
         }
+    }
+
+    private static function methodWithAdditionalParam($foo, $username, $password) {
+        if ($foo !== 'bar') {
+            throw new Exceptions\ArgumentException();
+        }
+
+        if (!is_string($username) || !is_string($password)) {
+            throw new Exceptions\ArgumentException();
+        }
+
+        return "SUCCESS";
     }
 
     private static function subtract($arguments)

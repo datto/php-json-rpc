@@ -54,14 +54,17 @@ class Server
      * @param string $json
      * Single request object, or an array of request objects, as a JSON string.
      *
+     * @param array $additionalParams
+     * A list of additional arguments to pass to the evaluator.
+     *
      * @return string|null
      * Returns a response object (or an error object) as a JSON string, when a query is made.
      * Returns an array of response/error objects as a JSON string, when multiple queries are made.
      * Returns null, when no response is necessary.
      */
-    public function reply($json)
+    public function reply($json, $additionalParams = array())
     {
-        $output = $this->processInput($json);
+        $output = $this->processInput($json, $additionalParams);
 
         if ($output === null) {
             return null;
@@ -76,12 +79,15 @@ class Server
      * @param string $json
      * Single request object, or an array of request objects, as a JSON string.
      *
+     * @param array $additionalParams
+     * A list of additional arguments to pass to the evaluator.
+     *
      * @return array|null
      * Returns a response object (or an error object) when a query is made.
      * Returns an array of response/error objects when multiple queries are made.
      * Returns null when no response is necessary.
      */
-    private function processInput($json)
+    private function processInput($json, $additionalParams = array())
     {
         if (!is_string($json)) {
             return self::parseError();
@@ -98,10 +104,10 @@ class Server
         }
 
         if (isset($input[0])) {
-            return $this->processBatchRequests($input);
+            return $this->processBatchRequests($input, $additionalParams);
         }
 
-        return $this->processRequest($input);
+        return $this->processRequest($input, $additionalParams);
     }
 
     /**
@@ -110,12 +116,15 @@ class Server
      * @param array $input
      * Array of request objects.
      *
+     * @param array $additionalParams
+     * A list of additional arguments to pass to the evaluator.
+     *
      * @return array|null
      * Returns a response/error object when a query is made.
      * Returns an array of response/error objects when multiple queries are made.
      * Returns null when no response is necessary.
      */
-    private function processBatchRequests($input)
+    private function processBatchRequests($input, $additionalParams = array())
     {
         $replies = array();
 
@@ -140,11 +149,14 @@ class Server
      * @param array $request
      * Single request object to be processed.
      *
+     * @param array $additionalParams
+     * A list of additional arguments to pass to the evaluator.
+     *
      * @return array|null
      * Returns a response object or an error object.
      * Returns null when no response is necessary.
      */
-    private function processRequest($request)
+    private function processRequest($request, $additionalParams = array())
     {
         if (!is_array($request)) {
             return self::requestError();
@@ -180,6 +192,10 @@ class Server
             }
         } else {
             $arguments = array();
+        }
+
+        if (count($additionalParams) > 0) {
+            $arguments = array_merge($arguments, $additionalParams);
         }
 
         if ($isQuery) {

@@ -291,10 +291,30 @@ class ServerTest extends TestCase
         $this->compare($input, $output);
     }
 
+    public function testReplyWithAdditionalParams()
+    {
+        $input = '{"jsonrpc": "2.0", "id": 1, "method": "methodWithAdditionalParam", "params": {"username": "jmccaffrey", "password": "password123"}}';
+
+        $output = '{"jsonrpc": "2.0", "id": 1, "result": "SUCCESS"}';
+
+        $this->compareWithParams($input, $output, array('foo' => 'bar'));
+    }
+
     private function compare($input, $expectedJsonOutput)
     {
         $server = new Server(new Api());
         $actualJsonOutput = $server->reply($input);
+
+        $expectedOutput = json_decode($expectedJsonOutput, true);
+        $actualOutput = json_decode($actualJsonOutput, true);
+
+        $this->assertSame($expectedOutput, $actualOutput);
+    }
+
+    private function compareWithParams($input, $expectedJsonOutput, $additionalParams)
+    {
+        $server = new Server(new Api());
+        $actualJsonOutput = $server->reply($input, $additionalParams);
 
         $expectedOutput = json_decode($expectedJsonOutput, true);
         $actualOutput = json_decode($actualJsonOutput, true);
