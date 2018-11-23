@@ -24,10 +24,10 @@
 
 namespace Datto\JsonRpc\Tests;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Datto\JsonRpc\Server;
 
-class ServerTest extends PHPUnit_Framework_TestCase
+class ServerTest extends TestCase
 {
     public function testArgumentsPositionalA()
     {

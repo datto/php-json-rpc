@@ -24,12 +24,12 @@
 
 namespace Datto\JsonRpc\Tests;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Datto\JsonRpc\Client;
 use Datto\JsonRpc\Response;
 use Datto\JsonRpc\Error;
 
-class ClientTest extends PHPUnit_Framework_TestCase
+class ClientTest extends TestCase
 {
     public function testNotification()
     {
