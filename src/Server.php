@@ -61,7 +61,11 @@ class Server
      */
     public function reply($json)
     {
-        $output = $this->processInput($json);
+        if ($this->getInput($json, $input)) {
+            $output = $this->processInput($input);
+        } else {
+            $output = $this->parseError();
+        }
 
         if ($output === null) {
             return null;
@@ -70,31 +74,32 @@ class Server
         return json_encode($output);
     }
 
+    private function getInput($json, &$input)
+    {
+        if (!is_string($json)) {
+            return false;
+        }
+
+        $input = json_decode($json, true);
+
+        return is_array($input);
+    }
+
     /**
      * Processes the user input, and prepares a response (if necessary).
      *
-     * @param string $json
-     * Single request object, or an array of request objects, as a JSON string.
+     * @param array $input
+     * Single request object, or an array of request objects.
      *
      * @return array|null
      * Returns a response object (or an error object) when a query is made.
      * Returns an array of response/error objects when multiple queries are made.
      * Returns null when no response is necessary.
      */
-    private function processInput($json)
+    private function processInput($input)
     {
-        if (!is_string($json)) {
-            return self::parseError();
-        }
-
-        $input = json_decode($json, true);
-
-        if (!is_array($input)) {
-            return self::parseError();
-        }
-
         if (count($input) === 0) {
-            return self::requestError();
+            return $this->requestError();
         }
 
         if (isset($input[0])) {
@@ -147,7 +152,7 @@ class Server
     private function processRequest($request)
     {
         if (!is_array($request)) {
-            return self::requestError();
+            return $this->requestError();
         }
 
         // The presence of the 'id' key indicates that a response is expected
@@ -156,19 +161,19 @@ class Server
         $id = &$request['id'];
 
         if (($id !== null) && !is_int($id) && !is_float($id) && !is_string($id)) {
-            return self::requestError();
+            return $this->requestError();
         }
 
         $version = &$request['jsonrpc'];
 
         if ($version !== self::VERSION) {
-            return self::requestError($id);
+            return $this->requestError($id);
         }
 
         $method = &$request['method'];
 
         if (!is_string($method)) {
-            return self::requestError($id);
+            return $this->requestError($id);
         }
 
         // The 'params' key is optional, but must be non-null when provided
@@ -176,7 +181,7 @@ class Server
             $arguments = $request['params'];
 
             if (!is_array($arguments)) {
-                return self::requestError($id);
+                return $this->requestError($id);
             }
         } else {
             $arguments = array();
@@ -210,13 +215,13 @@ class Server
     {
         try {
             $result = $this->evaluator->evaluate($method, $arguments);
-            return self::response($id, $result);
+            return $this->response($id, $result);
         } catch (Exception $exception) {
             $code = $exception->getCode();
             $message = $exception->getMessage();
             $data = $exception->getData();
 
-            return self::error($id, $code, $message, $data);
+            return $this->error($id, $code, $message, $data);
         }
     }
 
@@ -244,9 +249,9 @@ class Server
      * @return array
      * Returns an error object.
      */
-    private static function parseError()
+    private function parseError()
     {
-        return self::error(null, -32700, 'Parse error');
+        return $this->error(null, -32700, 'Parse error');
     }
 
     /**
@@ -260,9 +265,9 @@ class Server
      * @return array
      * Returns an error object.
      */
-    private static function requestError($id = null)
+    private function requestError($id = null)
     {
-        return self::error($id, -32600, 'Invalid Request');
+        return $this->error($id, -32600, 'Invalid Request');
     }
 
     /**
@@ -285,7 +290,7 @@ class Server
      * @return array
      * Returns an error object.
      */
-    private static function error($id, $code, $message, $data = null)
+    private function error($id, $code, $message, $data = null)
     {
         $error = array(
             'code' => $code,
@@ -316,7 +321,7 @@ class Server
      * @return array
      * Returns a response object.
      */
-    private static function response($id, $result)
+    private function response($id, $result)
     {
         return array(
             'jsonrpc' => self::VERSION,
