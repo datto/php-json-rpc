@@ -24,11 +24,12 @@
 
 namespace Datto\JsonRpc;
 
+use Datto\JsonRpc\Responses\ErrorResponse;
+use Datto\JsonRpc\Responses\Response;
+use Datto\JsonRpc\Responses\ResultResponse;
 use ErrorException;
 
 /**
- * Class Client
- *
  * @link http://www.jsonrpc.org/specification JSON-RPC 2.0 Specifications
  *
  * @package Datto\JsonRpc
@@ -39,34 +40,36 @@ class Client
     const VERSION = '2.0';
 
     /** @var array */
-    private $messages;
+    private $requests;
 
     public function __construct()
     {
-        $this->messages = array();
+        $this->reset();
+    }
+
+    /**
+     * Forget any unsent queries or notifications
+     */
+    public function reset()
+    {
+        $this->requests = [];
     }
 
     /**
      * @param mixed $id
      * @param string $method
-     * @param array $arguments
+     * @param array $arguments|null
      *
      * @return self
-     * Returns the object handle, so you can chain method calls if you like
+     * Returns the object handle (so you can chain method calls, if you like)
      */
-    public function query($id, $method, array $arguments)
+    public function query($id, string $method, array $arguments = null): self
     {
-        $message = array(
-            'jsonrpc' => self::VERSION,
-            'id' => $id,
-            'method' => $method
-        );
+        $request = self::getRequest($method, $arguments);
+        $request['id'] = $id;
 
-        if ($arguments !== null) {
-            $message['params'] = $arguments;
-        }
+        $this->requests[] = $request;
 
-        $this->messages[] = $message;
         return $this;
     }
 
@@ -75,20 +78,14 @@ class Client
      * @param array $arguments
      *
      * @return self
-     * Returns the object handle, so you can chain method calls if you like
+     * Returns the object handle (so you can chain method calls, if you like)
      */
-    public function notify($method, array $arguments)
+    public function notify($method, array $arguments = null): self
     {
-        $message = array(
-            'jsonrpc' => self::VERSION,
-            'method' => $method
-        );
+        $request = self::getRequest($method, $arguments);
 
-        if ($arguments !== null) {
-            $message['params'] = $arguments;
-        }
+        $this->requests[] = $request;
 
-        $this->messages[] = $message;
         return $this;
     }
 
@@ -104,28 +101,28 @@ class Client
      */
     public function encode()
     {
-        $count = count($this->messages);
+        $count = count($this->requests);
 
         if ($count === 0) {
             return null;
         }
 
         if ($count === 1) {
-            $output = array_shift($this->messages);
+            $input = array_shift($this->requests);
         } else {
-            $output = $this->messages;
+            $input = $this->requests;
         }
 
-        $this->messages = array();
+        $this->reset();
 
-        return json_encode($output);
+        return json_encode($input);
     }
 
     /**
      * Translates a JSON-RPC 2.0 server reply into an array of "Response"
      * objects
      *
-     * @param string $input
+     * @param string $json
      * String reply from a JSON-RPC 2.0 server
      *
      * @return Response[]
@@ -134,58 +131,84 @@ class Client
      * @throws ErrorException
      * Throws an "ErrorException" if the reply was not well-formed
      */
-    public function decode($input)
+    public function decode(string $json)
     {
         set_error_handler(__CLASS__ . '::onError');
-        $value = json_decode($input, true);
-        restore_error_handler();
 
-        if (($value === null) && (strtolower(trim($input)) !== 'null')) {
-            $valuePhp = self::getValuePhp($input);
-            throw new ErrorException("Invalid JSON: {$valuePhp}");
+        try {
+            $input = json_decode($json, true);
+        } finally {
+            restore_error_handler();
         }
 
-        if (!$this->getReply($value, $output)) {
-            $valuePhp = self::getValuePhp($input);
-            throw new ErrorException("Invalid JSON-RPC 2.0 response: {$valuePhp}");
+        if (($input === null) && (strtolower(trim($json)) !== 'null')) {
+            $valueText = self::getValueText($json);
+            throw new ErrorException("Invalid JSON: {$valueText}");
         }
 
-        return $output;
+        if (!$this->getResponses($input, $responses)) {
+            $valueText = self::getValueText($json);
+            throw new ErrorException("Invalid JSON-RPC 2.0 response: {$valueText}");
+        }
+
+        return $responses;
     }
 
-    private static function getValuePhp($value)
+    private static function getRequest(string $method, array $arguments = null): array
+    {
+        $request = [
+            'jsonrpc' => self::VERSION,
+            'method' => $method
+        ];
+
+        if ($arguments !== null) {
+            $request['params'] = $arguments;
+        }
+
+        return $request;
+    }
+
+    private static function getValueText($value): string
     {
         if (is_null($value)) {
             return 'null';
         }
 
         if (is_resource($value)) {
+            $type = get_resource_type($value);
             $id = (int)$value;
-            return "resource({$id})";
+            return "{$type}#{$id}";
         }
 
         return var_export($value, true);
     }
 
-    private function getReply($input, &$output)
+    private function getResponses($input, array &$responses = null): bool
     {
         if ($this->getResponse($input, $response)) {
-            $output = array($response);
+            $responses = [$response];
             return true;
         }
 
-        return $this->getBatchResponses($input, $output);
+        return $this->getBatchResponses($input, $responses);
     }
 
-    private function getResponse($input, &$output)
+    private function getResponse($input, &$response)
+    {
+        return $this->getResultResponse($input, $response) ||
+            $this->getErrorResponse($input, $response);
+    }
+
+    private function getResultResponse($input, &$response)
     {
         if (
             is_array($input) &&
+            !array_key_exists('error', $input) &&
             $this->getVersion($input) &&
             $this->getId($input, $id) &&
-            $this->getValue($input, $value, $isError)
+            $this->getResult($input, $value)
         ) {
-            $output = new Response($id, $value, $isError);
+            $response = new ResultResponse($id, $value);
             return true;
         }
 
@@ -194,100 +217,83 @@ class Client
 
     private function getVersion(array $input)
     {
-        return isset($input['jsonrpc']) && ($input['jsonrpc'] === '2.0');
+        return isset($input['jsonrpc']) && ($input['jsonrpc'] === self::VERSION);
     }
 
     private function getId(array $input, &$id)
     {
-        if (!array_key_exists('id', $input)) {
-            return false;
+        if (array_key_exists('id', $input)) {
+            $id = $input['id'];
+            return is_null($id) || is_int($id) || is_float($id) || is_string($id);
         }
 
-        $id = $input['id'];
-
-        return is_null($id) || is_int($id) || is_float($id) || is_string($id);
+        return false;
     }
 
-    private function getValue($input, &$value, &$isError)
+    private function getResult(array $input, &$value)
     {
-        return $this->getResult($input, $value, $isError) ||
-            $this->getError($input, $value, $isError);
-    }
-
-    private function getResult(array $input, &$value, &$isError)
-    {
-        if (!array_key_exists('result', $input)) {
-            return false;
-        }
-
-        $value = $input['result'];
-        $isError = false;
-
-        return true;
-    }
-
-    private function getError(array $input, &$value, &$isError)
-    {
-        if (!isset($input['error'])) {
-            return false;
-        }
-
-        $error = $input['error'];
-
-        if (
-            is_array($error) &&
-            $this->getMessage($error, $message) &&
-            $this->getCode($error, $code) &&
-            $this->getData($error, $data)
-        ) {
-            $value = new Error($message, $code, $data);
-            $isError = true;
+        if (array_key_exists('result', $input)) {
+            $value = $input['result'];
             return true;
         }
 
         return false;
     }
 
-    private function getCode(array $input, &$code)
+    private function getErrorResponse(array &$input, &$response)
     {
-        if (!isset($input['code'])) {
-            return false;
+        if (
+            is_array($input) &&
+            !array_key_exists('result', $input) &&
+            $this->getVersion($input) &&
+            $this->getId($input, $id) &&
+            $this->getError($input, $code, $message, $data)
+        ) {
+            $response = new ErrorResponse($id, $message, $code, $data);
+            return true;
         }
 
-        $code = $input['code'];
+        return false;
+    }
+
+    private function getError(array $input, &$code, &$message, &$data)
+    {
+        $error = $input['error'] ?? null;
+
+        return is_array($error) &&
+            $this->getErrorCode($error, $code) &&
+            $this->getErrorMessage($error, $message) &&
+            $this->getErrorData($error, $data);
+    }
+
+    private function getErrorCode(array $input, &$code)
+    {
+        $code = $input['code'] ?? null;
 
         return is_int($code);
     }
 
-    private function getMessage(array $input, &$message)
+    private function getErrorMessage(array $input, &$message)
     {
-        if (!isset($input['message'])) {
-            return false;
-        }
-
-        $message = $input['message'];
+        $message = $input['message'] ?? null;
 
         return is_string($message);
     }
 
-    private function getData(array $input, &$data)
+    private function getErrorData(array $input, &$data)
     {
-        if (array_key_exists('data', $input)) {
-            $data = $input['data'];
-        } else {
-            $data = null;
-        }
+        $data = $input['data'] ?? null;
 
         return true;
     }
 
-    private function getBatchResponses($input, &$output)
+    private function getBatchResponses($input, &$responses)
     {
         if (!is_array($input)) {
             return false;
         }
 
-        $results = array();
+        $responses = [];
         $i = 0;
 
         foreach ($input as $key => $value) {
@@ -295,12 +301,11 @@ class Client
                 return false;
             }
 
-            if (!$this->getResponse($value, $results[])) {
+            if (!$this->getResponse($value, $responses[])) {
                 return false;
             }
         }
 
-        $output = $results;
         return true;
     }
 

@@ -24,10 +24,9 @@
 
 namespace Datto\JsonRpc\Exceptions;
 
+use Datto\JsonRpc\Responses\ErrorResponse;
+
 /**
- * Class ArgumentException
- * @package Datto\JsonRpc\Exceptions
- *
  * If a method cannot be called (e.g. if the method doesn't exist, or is a
  * private method), then you should throw a "MethodException".
  *
@@ -49,6 +48,6 @@ class ArgumentException extends Exception
 {
     public function __construct()
     {
-        parent::__construct('Invalid params', -32602);
+        parent::__construct('Invalid params', ErrorResponse::INVALID_ARGUMENTS);
     }
 }

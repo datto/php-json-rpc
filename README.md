@@ -37,7 +37,9 @@ $client = new Client();
 
 $client->query(1, 'add', array(1, 2));
 
-$message = $client->encode(); // {"jsonrpc":"2.0","id":1,"method":"add","params":[1,2]}
+$message = $client->encode();
+
+// message: {"jsonrpc":"2.0","method":"add","params":[1,2],"id":1}
 ```
 
 ### Server
@@ -47,7 +49,9 @@ $api = new Api();
 
 $server = new Server($api);
 
-$reply = $server->reply($message); // {"jsonrpc":"2.0","id":1,"result":3}
+$reply = $server->reply($message);
+
+// reply: {"jsonrpc":"2.0","result":3,"id":1}
 ```
 
 *See the [examples](https://github.com/datto/php-json-rpc/tree/master/examples) folder for full working examples.*
@@ -55,7 +59,7 @@ $reply = $server->reply($message); // {"jsonrpc":"2.0","id":1,"result":3}
 
 ## Requirements
 
-* PHP >= 5.3
+* PHP >= 7.0
 
 
 ## License

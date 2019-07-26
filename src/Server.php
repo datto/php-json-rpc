@@ -25,16 +25,14 @@
 namespace Datto\JsonRpc;
 
 use Datto\JsonRpc\Exceptions\Exception;
+use Datto\JsonRpc\Responses\ErrorResponse;
 
 /**
- * Class Server
- *
  * @link http://www.jsonrpc.org/specification JSON-RPC 2.0 Specifications
- *
- * @package Datto\JsonRpc
  */
 class Server
 {
+    /** @var string */
     const VERSION = '2.0';
 
     /** @var Evaluator */
@@ -251,7 +249,7 @@ class Server
      */
     private function parseError()
     {
-        return $this->error(null, -32700, 'Parse error');
+        return $this->error(null, ErrorResponse::PARSE_ERROR, 'Parse error');
     }
 
     /**
@@ -267,7 +265,7 @@ class Server
      */
     private function requestError($id = null)
     {
-        return $this->error($id, -32600, 'Invalid Request');
+        return $this->error($id, ErrorResponse::INVALID_REQUEST, 'Invalid Request');
     }
 
     /**

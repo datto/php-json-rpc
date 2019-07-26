@@ -24,12 +24,12 @@
 
 namespace Datto\JsonRpc\Tests;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Datto\JsonRpc\Client;
-use Datto\JsonRpc\Response;
-use Datto\JsonRpc\Error;
+use Datto\JsonRpc\Responses\ResultResponse;
+use Datto\JsonRpc\Responses\ErrorResponse;
 
-class ClientTest extends PHPUnit_Framework_TestCase
+class ClientTest extends TestCase
 {
     public function testNotification()
     {
@@ -78,8 +78,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
         $client = new Client();
         $actualOutput = $client->decode($reply);
-        $response = new Response(1, 2, false);
-        $expectedOutput = array($response);
+        $expectedOutput = [new ResultResponse(1, 2)];
 
         $this->assertSameValues($expectedOutput, $actualOutput);
     }
@@ -90,9 +89,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
         $client = new Client();
         $actualOutput = $client->decode($reply);
-        $error = new Error('Method not found', -32601, null);
-        $response = new Response(1, $error, true);
-        $expectedOutput = array($response);
+        $expectedOutput = [new ErrorResponse(1, 'Method not found', -32601)];
 
         $this->assertSameValues($expectedOutput, $actualOutput);
     }

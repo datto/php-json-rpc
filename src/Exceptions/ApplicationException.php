@@ -25,9 +25,6 @@
 namespace Datto\JsonRpc\Exceptions;
 
 /**
- * Class ApplicationException
- * @package Datto\JsonRpc\Exceptions
- *
  * If a method cannot be called (e.g. if the method doesn't exist, or is a
  * private method), then you should throw a "MethodException".
  *

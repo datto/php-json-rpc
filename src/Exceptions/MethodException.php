@@ -24,10 +24,9 @@
 
 namespace Datto\JsonRpc\Exceptions;
 
+use Datto\JsonRpc\Responses\ErrorResponse;
+
 /**
- * Class MethodException
- * @package Datto\JsonRpc\Exceptions
- *
  * If a method cannot be called (e.g. if the method doesn't exist, or is a
  * private method), then you should throw a "MethodException".
  *
@@ -49,6 +48,6 @@ class MethodException extends Exception
 {
     public function __construct()
     {
-        parent::__construct('Method not found', -32601);
+        parent::__construct('Method not found', ErrorResponse::INVALID_METHOD);
     }
 }

@@ -27,9 +27,6 @@ namespace Datto\JsonRpc\Exceptions;
 use Exception as BaseException;
 
 /**
- * Class Exception
- * @package Datto\JsonRpc\Exceptions
- *
  * If a method cannot be called (e.g. if the method doesn't exist, or is a
  * private method), then you should throw a "MethodException".
  *
@@ -60,13 +57,15 @@ abstract class Exception extends BaseException
      * @param int $code
      * Integer identifying the type of error that occurred. This code MUST
      * follow the JSON-RPC 2.0 requirements for error codes:
-     * @link http://www.jsonrpc.org/specification#error_object
      *
      * @param null|boolean|integer|float|string|array $data
      * An optional primitive value that contains additional information about
      * the error.You're free to define the format of this data (e.g. you could
      * supply an array with detailed error information). Alternatively, you may
      * omit this field by supplying a null value.
+     *
+     * @link http://www.jsonrpc.org/specification#error_object
+     *
      */
     public function __construct($message, $code, $data = null)
     {
