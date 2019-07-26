@@ -72,7 +72,7 @@ This package is released under an open-source license: [LGPL-3.0](https://www.gn
 If you're using [Composer](https://getcomposer.org/), you can include this library
 ([datto/json-rpc](https://packagist.org/packages/datto/json-rpc)) like this:
 ```
-composer require "datto/json-rpc" "~5.0"
+composer require "datto/json-rpc"
 ```
 
 
