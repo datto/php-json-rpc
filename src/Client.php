@@ -90,37 +90,65 @@ class Client
     }
 
     /**
-     * Encodes the requests as a valid JSON-RPC 2.0 string
+     * Encodes the request(s) as a valid JSON-RPC 2.0 string
      *
-     * This also resets the Client, so you can perform more queries using
-     * the same Client object.
+     * This also resets the Client, so you can use the same Client object
+     * to perform more queries.
      *
-     * @return null|string
+     * @return string|null
      * Returns a valid JSON-RPC 2.0 message string
      * Returns null if there is nothing to encode
      */
     public function encode()
     {
-        $count = count($this->requests);
+        $input = $this->preEncode();
 
-        if ($count === 0) {
+        if ($input === null) {
             return null;
         }
 
-        if ($count === 1) {
-            $input = array_shift($this->requests);
+        return json_encode($input);
+    }
+
+    /**
+     * Encodes the request(s) as a JSON-RPC 2.0 array, but does NOT perform
+     * the final "json_encode" step which is necessary to turn the array
+     * into a valid JSON-RPC 2.0 string. This gives you the opportunity
+     * to inspect or modify the raw data, or to alter the encoding algorithm.
+     *
+     * When you're finished manipulating the request, you are responsible for
+     * JSON-encoding the value to construct the final JSON-RPC 2.0 string.
+     * @see self::encode()
+     *
+     * This also resets the Client, so you can use the same Client object
+     * to perform more queries.
+     *
+     * @return array|null
+     * Returns a JSON-RPC 2.0 request array
+     * Returns null if no requests have been queued
+     */
+    public function preEncode()
+    {
+        $n = count($this->requests);
+
+        if ($n === 0) {
+            return null;
+        }
+
+        if ($n === 1) {
+            $input = $this->requests[0];
         } else {
             $input = $this->requests;
         }
 
         $this->reset();
 
-        return json_encode($input);
+        return $input;
     }
 
     /**
      * Translates a JSON-RPC 2.0 server reply into an array of "Response"
-     * objects
+     * objects.
      *
      * @param string $json
      * String reply from a JSON-RPC 2.0 server
@@ -133,21 +161,48 @@ class Client
      */
     public function decode(string $json)
     {
-        set_error_handler(__CLASS__ . '::onError');
+        $input = json_decode($json, true);
 
-        try {
-            $input = json_decode($json, true);
-        } finally {
-            restore_error_handler();
-        }
+        $errorCode = json_last_error();
 
-        if (($input === null) && (strtolower(trim($json)) !== 'null')) {
+        if ($errorCode !== 0) {
+            $errorMessage = json_last_error_msg();
+            $jsonException = new ErrorException($errorMessage, $errorCode);
+
             $valueText = self::getValueText($json);
-            throw new ErrorException("Invalid JSON: {$valueText}");
+            throw new ErrorException("Invalid JSON: {$valueText}", 0, E_ERROR, __FILE__, __LINE__, $jsonException);
         }
 
+        return $this->postDecode($input);
+    }
+
+    /**
+     * Translates a JSON-decoded server reply into an array of "Response"
+     * objects.
+     *
+     * This gives you the opportunity to use your own modified "json_decode"
+     * algorithm, or to inspect or modify the server response before it is
+     * processed under the JSON-RPC 2.0 specifications. This can be handy
+     * if you're tweaking or extending the JSON-RPC 2.0 format.
+     *
+     * Before calling this method, you are responsible for JSON-decoding
+     * the server reply string. You should have that decoded array value
+     * to use as the input here.
+     * @see self::decode()
+     * 
+     * @param mixed $input
+     * An array containing the JSON-decoded server reply
+     *
+     * @return Response[]
+     * Returns a zero-indexed array of "Response" objects
+     *
+     * @throws ErrorException
+     * Throws an "ErrorException" if the reply was not well-formed
+     */
+    public function postDecode($input)
+    {
         if (!$this->getResponses($input, $responses)) {
-            $valueText = self::getValueText($json);
+            $valueText = self::getValueText($input);
             throw new ErrorException("Invalid JSON-RPC 2.0 response: {$valueText}");
         }
 
@@ -307,13 +362,5 @@ class Client
         }
 
         return true;
-    }
-
-    public static function onError($level, $message, $file, $line)
-    {
-        $message = trim($message);
-        $code = 0;
-
-        throw new ErrorException($message, $code, $level, $file, $line);
     }
 }

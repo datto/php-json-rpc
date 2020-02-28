@@ -47,40 +47,64 @@ class Server
     }
 
     /**
-     * Processes the user input, and prepares a response (if necessary).
+     * Processes a JSON-RPC 2.0 client request string and prepares a valid
+     * response.
      *
      * @param string $json
      * Single request object, or an array of request objects, as a JSON string.
      *
-     * @return string|null
-     * Returns a response object (or an error object) as a JSON string, when a query is made.
-     * Returns an array of response/error objects as a JSON string, when multiple queries are made.
-     * Returns null, when no response is necessary.
+     * @return null|string
+     * Returns null when no response is necessary.
+     * Returns a response/error object, as a JSON string, when a query is made.
+     * Returns an array of response/error objects, as a JSON string, when multiple queries are made.
+     * @see Responses\ResultResponse
+     * @see Responses\ErrorResponse
      */
     public function reply($json)
     {
-        if ($this->getInput($json, $input)) {
-            $output = $this->processInput($input);
+        if (is_string($json)) {
+            $input = json_decode($json, true);
         } else {
-            $output = $this->parseError();
+            $input = null;
         }
 
-        if ($output === null) {
-            return null;
+        $reply = $this->rawReply($input);
+
+        if (is_array($reply)) {
+            $output = json_encode($reply);
+        } else {
+            $output = null;
         }
 
-        return json_encode($output);
+        return $output;
     }
 
-    private function getInput($json, &$input)
+    /**
+     * Processes a JSON-RPC 2.0 client request array and prepares a valid
+     * response. This method skips the JSON encoding and decoding steps,
+     * so you can use your own alternative encoding algorithm, or extend
+     * the JSON-RPC 2.0 format.
+     *
+     * When you use this method, you are taking responsibility for
+     * performing the necessary JSON encoding and decoding steps yourself.
+     * @see self::reply()
+     *
+     * @param mixed $input
+     * An array containing the JSON-decoded client request.
+     *
+     * @return null|array
+     * Returns null if no reply is necessary
+     * Returns the JSON-RPC 2.0 server reply as an array
+     */
+    public function rawReply($input)
     {
-        if (!is_string($json)) {
-            return false;
+        if (is_array($input)) {
+            $reply = $this->processInput($input);
+        } else {
+            $reply = $this->parseError();
         }
 
-        $input = json_decode($json, true);
-
-        return is_array($input);
+        return $reply;
     }
 
     /**
@@ -94,7 +118,7 @@ class Server
      * Returns an array of response/error objects when multiple queries are made.
      * Returns null when no response is necessary.
      */
-    private function processInput($input)
+    private function processInput(array $input)
     {
         if (count($input) === 0) {
             return $this->requestError();

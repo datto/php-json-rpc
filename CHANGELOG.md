@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [6.1.0] - 2020-02-28
+### Added
+ - The "Client::preEncode" and "Client::postDecode" methods have been added to allow
+   advanced users to inspect and tweak the inner workings of the JSON-RPC library.
+ - The "Server::rawReply" method has been added to complement the new "Client" methods.
+
 ## [6.0.0] - 2019-07-25
 ### Changed
  - There are now two types of responses--an "ErrorResponse" and a "ResultResponse"--
