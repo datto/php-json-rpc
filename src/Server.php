@@ -198,9 +198,13 @@ class Server
             return $this->requestError($id);
         }
 
-        // The 'params' key is optional, but must be non-null when provided
+        // The 'params' key is optional, but must be null|array when provided
         if (array_key_exists('params', $request)) {
             $arguments = $request['params'];
+
+            if (is_null($arguments)) {
+                $arguments = array();
+            }
 
             if (!is_array($arguments)) {
                 return $this->requestError($id);
