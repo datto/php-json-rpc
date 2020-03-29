@@ -146,6 +146,15 @@ class ServerTest extends TestCase
         $this->compare($input, $output);
     }
 
+    public function testNullParams()
+    {
+        $input = '{"jsonrpc": "2.0", "method": "null params", "id": "1", "params": null}';
+
+        $output = '{"jsonrpc": "2.0", "id": "1", "result": 0}';
+
+        $this->compare($input, $output);
+    }
+
     public function testImplementationError()
     {
         $input = '{"jsonrpc": "2.0", "id": 1, "method": "implementation error"}';

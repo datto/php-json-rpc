@@ -35,6 +35,9 @@ class Api implements Evaluator
             case 'subtract':
                 return self::subtract($arguments);
 
+            case 'null params':
+                return self::nullParams($arguments);
+
             case 'implementation error':
                 return self::implementationError($arguments);
 
@@ -66,6 +69,11 @@ class Api implements Evaluator
         }
 
         return $a - $b;
+    }
+
+    private function nullParams($arguments)
+    {
+        return count($arguments);
     }
 
     private static function implementationError($arguments)
